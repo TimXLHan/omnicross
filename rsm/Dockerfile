@@ -4,6 +4,8 @@ FROM rust:slim-bullseye as build
 ARG my_appname
 ENV my_appname=$my_appname
 
+RUN apt update && apt install -y pkg-config libssl-dev
+
 # create a new empty shell project
 RUN USER=root cargo new --bin ${my_appname}
 WORKDIR /${my_appname}
