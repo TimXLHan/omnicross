@@ -49,8 +49,9 @@ impl OmniPaxosServer {
                             receiver_node.connected = true;
                         }
                     },
-                    Err(_) => {
+                    Err(error) => {
                         receiver_node.connected = false;
+                        print!("{:?}", error);
                     },
                 }
             } else {
@@ -72,7 +73,8 @@ impl OmniPaxosServer {
                 Some(entry) = self.client_msg_queue.recv() => {
                     if let Err(_) = self.omnipaxos.lock().unwrap().append(entry) {
                         return (); // TODO: implement error handling
-                    } 
+                    }
+                
                 },
                 else => { } 
             }

@@ -1,0 +1,25 @@
+service: {
+  name: omnicross-svc,
+}
+app: {
+  name: omnicross,
+}
+statefulset: {
+  name: omnicross,
+  replicas: 3
+}
+
+
+port: {
+  container: {
+    rsm: {
+      name: axum,
+      value: 8080
+    }
+  },
+  node: {
+    name: external,
+    value: 30080,
+  }
+}
+

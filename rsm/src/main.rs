@@ -7,10 +7,11 @@ use reqwest::StatusCode;
 use consensus::{OmniPaxosServer, Command};
 use tokio::sync::mpsc;
 use uuid::Uuid;
+use topologyk8s as topology;
 
 mod util;
 mod consensus;
-mod topology;
+mod topologyk8s;
 
 #[macro_use]
 extern crate lazy_static;
@@ -35,6 +36,7 @@ pub struct PutRequest {
 }
 
 async fn handle_apply(State(state): State<Arc<AppState>>, Json(req): Json<PutRequest>) -> StatusCode {
+    println!("PID {}: Applying request from client", topology::get_pid());
     let msg = Command {
         id: (topology::get_pid(), Uuid::new_v4()),
         command: req.command,
@@ -46,6 +48,10 @@ async fn handle_apply(State(state): State<Arc<AppState>>, Json(req): Json<PutReq
 }
 
 async fn handle_omnipaxos(State(state): State<Arc<AppState>>, Json(msg): Json<Message<Command>>) -> StatusCode {
+    match msg.clone() {
+        Message::SequencePaxos(pm) => println!("PID {}: Paxos message from {}: {:?}", pm.to, pm.from, pm.msg),
+        Message::BLE(_) => (),
+    }
     match state.omnipaxos_incoming_sender.send(msg).await {
         Ok(_) => StatusCode::OK,
         Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
@@ -61,6 +67,9 @@ async fn handle_print_log(State(state): State<Arc<AppState>>) -> StatusCode {
 async fn main() {
     let (omnipaxos_incoming_sender, omnipaxos_incoming_receiver) = mpsc::channel::<Message<Command>>(util::BUFFER_SIZE);
     let (client_msg_queue_sender, client_msg_queue_receiver) = mpsc::channel::<Command>(util::BUFFER_SIZE);
+
+    print!("Network topology for node {}", topology::get_pid());
+    print!("{:?}", topology::get_topology());
 
     let mut omnipaxosserver = OmniPaxosServer {
         omnipaxos: Arc::new(Mutex::new(consensus::build_omnipaxos_instance())),
