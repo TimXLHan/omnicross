@@ -11,15 +11,15 @@ RUN USER=root cargo new --bin ${my_appname}
 WORKDIR /${my_appname}
 
 # copy over your manifests
-COPY ./Cargo.lock ./Cargo.lock
-COPY ./Cargo.toml ./Cargo.toml
+COPY ./rsm/Cargo.lock ./Cargo.lock
+COPY ./rsm/Cargo.toml ./Cargo.toml
 
 # this build step will cache your dependencies
 RUN cargo build --release
 RUN rm src/*.rs
 
 # copy your source tree
-COPY ./src ./src
+COPY ./rsm/src ./src
 
 # build for release
 RUN rm ./target/release/deps/${my_appname}*

@@ -1,0 +1,181 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.statefulset.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.app.name }} # has to match .spec.template.metadata.labels
+  serviceName: {{ .Values.service.name | quote }}
+  replicas: {{ .Values.statefulset.replicas }} # by default is 1
+  minReadySeconds: 0 # by default is 0
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.app.name }} # has to match .spec.selector.matchLabels
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: rsm
+        image: {{ .Values.werf.image.omnicrossrsm }}
+        ports:
+        - containerPort: {{ .Values.port.container.rsm.value }}
+          name: {{ .Values.port.container.rsm.name }}
+        env:
+        # Turn on RUNNING_IN_K8S_ENV
+        - name: RUNNING_IN_K8S_ENV
+          value: "true"
+
+        # Port for the container
+        - name: PORT
+          value: {{ .Values.port.container.rsm.value | quote }}
+
+        # Specify the pod name of the given pod
+        - name: PODNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+
+        # Specify the namespace
+        - name: NAMESPACE 
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+
+        # Specify how the relpica services are named
+        - name: SERVICENAME
+          value: {{ .Values.service.name | quote }}
+
+        # Specify how the relpica services are named
+        - name: STATEFULSETNAME
+          value: {{ .Values.statefulset.name | quote }}
+
+        # Specify how many replicas we have
+        - name: REPLICAS
+          value: {{ .Values.statefulset.replicas | quote }}
+# # Define the deployment of Raft node as stateful set
+# # The cluster as a whole looks like a single service
+# # to the client
+# apiVersion: apps/v1
+# kind: StatefulSet
+# metadata:
+#   name: &omnipaxosClusterID omnicross000
+#   labels:
+#     app: &appName omnicross
+#     omnipaxos-cluster/id: *omnipaxosClusterID
+# spec:
+#   selector:
+#     matchLabels:
+#       app: *appName
+#       omnipaxos-cluster/id: *omnipaxosClusterID
+#   replicas: 3
+#   serviceName: *omnipaxosClusterID
+    
+#   # Define the pod template for the raft-node
+#   # its volumes, environment, ports and so on
+#   template:
+#     metadata:
+#       name: node
+#       labels:
+#         app: *appName
+#         omnipaxos-cluster/id: *omnipaxosClusterID
+#         omnipaxos-cluster/size: "3" # must be same as replicas in stateful set spec
+#         omnipaxos-cluster/svcName: *omnipaxosClusterID
+    
+#     # Now specify the port that makes up the
+#     # raft cluster.
+#     spec:
+#       containers:
+#       - name: omnipaxos-node
+#         image: {{ .Values.werf.image.omnicrossrsm }}
+#         # imagePullPolicy: Always
+#         # Specify the ports to be exposed in
+#         # the pod for communication with other nodes
+#         ports:
+#         - containerPort: {{ .Values.containerPort }}
+        
+#         # Specify the environment variables required
+#         # for the start of the container as well as
+#         # the cluster formation.
+#         env:
+#         # Turn on RUNNING_IN_K8S_ENV to pick the
+#         # kubernetes joiner for cluster formation
+#         - name: RUNNING_IN_K8S_ENV
+#           value: "true"
+
+#         # Port for the container
+#         # - name: PORT
+#         #  value: {{ .Values.containerPort }}
+
+#         # Specify the node ID of the given node
+#         - name: PID
+#           valueFrom:
+#             fieldRef:
+#               fieldPath: metadata.uid
+        
+#         # Specify the path for the cluster configuration
+#         # In kubernetes mode, it must be a directory instead
+#         # of a configuration file. To this directory the labels
+#         # and namespace information must be mounted (using
+#         # downward API)
+#         - name: CLUSTER_CONFIG_PATH
+#           value: &clusterConfigPath "/node/cluster-data/cluster"
+
+#         # Specify the volumes to be mounted
+#         # to the container to store data
+#         volumeMounts:
+#         # Volume to get data for cluster formation
+#         - name: &cluster cluster
+#           mountPath: *clusterConfigPath
+#           readOnly: true
+        
+#       # Volumes represent the volumes that can be
+#       # mounted to the container (it can be either
+#       # persistent or non-persistent)
+#       volumes:
+#       - name: *cluster
+#         downwardAPI:
+#           items:
+#             # labels represents the labels on the pod
+#           - path: "labels"
+#             fieldRef:
+#               fieldPath: metadata.labels
+
+#             # namespace represents the namespace in
+#             # the pod is placed in Kubernetes
+#           - path: "k8s-ns"
+#             fieldRef:
+#               fieldPath: metadata.namespace
+
+#       # Define pod anti-affinity so that no two raft-nodes
+#       # (pods in K8S lingo) are scheduled on the same node.
+#       # Because if the node goes down it will take down multiple
+#       # raft-nodes instead of one which greatly decreases the
+#       # raft cluster availability
+#       affinity:
+#         podAntiAffinity:
+#           requiredDuringSchedulingIgnoredDuringExecution:
+#           - labelSelector:
+#               matchExpressions:
+#               - key: app
+#                 operator: In
+#                 values:
+#                 - *appName
+#             topologyKey: "kubernetes.io/hostname"          
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: omnipaxos-apiservice
+#   labels:
+#     app: omnicross
+#     omnipaxos-cluster/id: omnicross000
+#     version: v0.1
+# spec:
+#   selector:
+#     app: omnicross
+#     omnipaxos-cluster/id: omnicross000
+#   ports:
+#   - protocol: TCP
+#     port: 7777
+#   type: LoadBalancer
