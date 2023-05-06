@@ -1,17 +1,14 @@
 use std::{env, net::SocketAddr, sync::{Arc, Mutex}};
-use axum::{Router, routing::{put, post, get}, extract::{State, Json}};
+use axum::{Router, routing::{put, post, get}};
 use omnipaxos_storage::memory_storage::MemoryStorage;
-use serde::{Serialize, Deserialize};
 use omnipaxos_core::{messages::Message, omni_paxos::OmniPaxos};
-use reqwest::StatusCode;
-use consensus::{OmniPaxosServer, Command};
+use consensus::{OmniPaxosServer, OmnipaxosLogEntry};
 use tokio::sync::mpsc;
-use uuid::Uuid;
-use topologyk8s as topology;
 
 mod util;
 mod consensus;
-mod topologyk8s;
+mod topology;
+mod api;
 
 #[macro_use]
 extern crate lazy_static;
@@ -24,49 +21,16 @@ lazy_static! {
     };
 }
 
-struct AppState {
-    omnipaxos_incoming_sender: mpsc::Sender<Message<Command>>,
-    client_msg_queue_sender: mpsc::Sender<Command>,
-    omnipaxos: Arc<Mutex<OmniPaxos<Command, MemoryStorage<Command>>>>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct PutRequest {
-    pub command: String,
-}
-
-async fn handle_apply(State(state): State<Arc<AppState>>, Json(req): Json<PutRequest>) -> StatusCode {
-    println!("PID {}: Applying request from client", topology::get_pid());
-    let msg = Command {
-        id: (topology::get_pid(), Uuid::new_v4()),
-        command: req.command,
-    };
-    match state.client_msg_queue_sender.send(msg).await {
-        Ok(_) => StatusCode::OK,
-        Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
-    }
-}
-
-async fn handle_omnipaxos(State(state): State<Arc<AppState>>, Json(msg): Json<Message<Command>>) -> StatusCode {
-    match msg.clone() {
-        Message::SequencePaxos(pm) => println!("PID {}: Paxos message from {}: {:?}", pm.to, pm.from, pm.msg),
-        Message::BLE(_) => (),
-    }
-    match state.omnipaxos_incoming_sender.send(msg).await {
-        Ok(_) => StatusCode::OK,
-        Err(_) => StatusCode::INTERNAL_SERVER_ERROR,
-    }
-}
-
-async fn handle_print_log(State(state): State<Arc<AppState>>) -> StatusCode {
-    println!("decided log: {:?}", state.omnipaxos.lock().unwrap().read_decided_suffix(0));
-    StatusCode::OK
+pub struct AppState {
+    omnipaxos_incoming_sender: mpsc::Sender<Message<OmnipaxosLogEntry>>,
+    client_msg_queue_sender: mpsc::Sender<OmnipaxosLogEntry>,
+    omnipaxos: Arc<Mutex<OmniPaxos<OmnipaxosLogEntry, MemoryStorage<OmnipaxosLogEntry>>>>,
 }
 
 #[tokio::main]
 async fn main() {
-    let (omnipaxos_incoming_sender, omnipaxos_incoming_receiver) = mpsc::channel::<Message<Command>>(util::BUFFER_SIZE);
-    let (client_msg_queue_sender, client_msg_queue_receiver) = mpsc::channel::<Command>(util::BUFFER_SIZE);
+    let (omnipaxos_incoming_sender, omnipaxos_incoming_receiver) = mpsc::channel::<Message<OmnipaxosLogEntry>>(util::BUFFER_SIZE);
+    let (client_msg_queue_sender, client_msg_queue_receiver) = mpsc::channel::<OmnipaxosLogEntry>(util::BUFFER_SIZE);
 
     print!("Network topology for node {}", topology::get_pid());
     print!("{:?}", topology::get_topology());
@@ -92,9 +56,10 @@ async fn main() {
     });
 
     let router = Router::new()
-        .route("/omnipaxos", post(handle_omnipaxos))
-        .route("/apply",put(handle_apply))
-        .route("/print_log", get(handle_print_log))
+        .route("/omnipaxos", post(api::handle_omnipaxos))
+        .route("/apply",put(api::handle_apply))
+        .route("/read/:from_idx", get(api::handle_read))
+        .route("/print_log", get(api::handle_print_log))
         .with_state(shared_state);
 
     let host = "0.0.0.0";
