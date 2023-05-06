@@ -8,10 +8,11 @@ use std::{
 use crate::{
     util::{ELECTION_TIMEOUT, OUTGOING_MESSAGE_PERIOD},
     topology,
+    api::OmnipaxosLogData,
 };
 use tokio::{sync::mpsc, time};
 
-pub fn build_omnipaxos_instance() -> OmniPaxos<Command, MemoryStorage<Command>> {
+pub fn build_omnipaxos_instance() -> OmniPaxos<OmnipaxosLogEntry, MemoryStorage<OmnipaxosLogEntry>> {
     let omnipaxos_config = OmniPaxosConfig {
         configuration_id: 1,
         pid: topology::get_pid(),
@@ -19,20 +20,21 @@ pub fn build_omnipaxos_instance() -> OmniPaxos<Command, MemoryStorage<Command>> 
         ..Default::default()
     };
     
-    let storage = MemoryStorage::<Command>::default();
+    let storage = MemoryStorage::<OmnipaxosLogEntry>::default();
     omnipaxos_config.build(storage)
 }
 
+// Future omnipaxos log entry message
 #[derive(Clone, Debug, Serialize, Deserialize, Entry)]
-pub struct Command {
+pub struct OmnipaxosLogEntry {
     pub id: (u64, Uuid),
-    pub command: String,
+    pub data: OmnipaxosLogData,
 }
 
 pub struct OmniPaxosServer {
-    pub omnipaxos: Arc<Mutex<OmniPaxos<Command, MemoryStorage<Command>>>>,
-    pub omnipaxos_incoming: mpsc::Receiver<Message<Command>>,
-    pub client_msg_queue: mpsc::Receiver<Command>,
+    pub omnipaxos: Arc<Mutex<OmniPaxos<OmnipaxosLogEntry, MemoryStorage<OmnipaxosLogEntry>>>>,
+    pub omnipaxos_incoming: mpsc::Receiver<Message<OmnipaxosLogEntry>>,
+    pub client_msg_queue: mpsc::Receiver<OmnipaxosLogEntry>,
     pub topology: topology::Topology,
 }
 
