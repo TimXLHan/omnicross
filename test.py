@@ -4,7 +4,7 @@ import requests
 from time import sleep
 
 node = sys.argv[1]
-print("Addr: ", node)
+print("Calling cluster at: ", node)
 
 def run_request(node, index):
     print("Running put request...")
@@ -20,7 +20,7 @@ def run_request(node, index):
 for i in range(0, 5):
     run_request(node, i)
 
-sleep(1)
-print("Issueing print...")
+sleep(2)
+print("Reading log...")
 resp = requests.get(node + "/read/0")
 print(resp.text)
