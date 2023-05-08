@@ -3,3 +3,6 @@ project: omnicross
 ---
 image: omnicrossrsm
 dockerfile: ./rsm/Dockerfile
+---
+image: omnicrossapp
+dockerfile: ./app/Dockerfile

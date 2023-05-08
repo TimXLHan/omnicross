@@ -26,15 +26,14 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pip install requests",
+	"postCreateCommand": "pip install requests Flask",
 
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
 			"extensions": [
 				"rust-lang.rust-analyzer",
-				"ms-python.python",
-				"Tim-Koehler.helm-intellisense"
+				"ms-python.python"
 			]
 		}
 	}
