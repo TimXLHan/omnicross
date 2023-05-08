@@ -32,7 +32,6 @@ ENV my_appname=$my_appname
 
 # copy the build artifact from the build stage
 COPY --from=build /${my_appname}/target/release/${my_appname} /usr/bin/${my_appname}
-EXPOSE 3000
 
 # set the startup command to run your binary
 CMD ${my_appname}

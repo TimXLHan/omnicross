@@ -16,6 +16,7 @@ spec:
     spec:
       terminationGracePeriodSeconds: 10
       containers:
+      ### RSM container
       - name: rsm
         image: {{ .Values.werf.image.omnicrossrsm }}
         ports:
@@ -53,6 +54,30 @@ spec:
         # Specify how many replicas we have
         - name: REPLICAS
           value: {{ .Values.statefulset.replicas | quote }}
+      ### Application container
+      - name: app
+        image: {{ .Values.werf.image.omnicrossapp }}
+        ports:
+        - containerPort: {{ .Values.port.container.app.value }}
+          name: {{ .Values.port.container.app.name }}
+        env:
+        # Turn on RUNNING_IN_K8S_ENV
+        - name: RUNNING_IN_K8S_ENV
+          value: "true"
+
+        # Port for the container
+        - name: PORT
+          value: {{ .Values.port.container.app.value | quote }}
+
+        # Port for where to reach the rsm
+        - name: RSM_PORT
+          value: {{ .Values.port.container.rsm.value | quote }}
+
+        # Specify the pod name of the given pod
+        - name: PODNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
 ---
 apiVersion: v1
 kind: Service
@@ -64,6 +89,8 @@ spec:
   ports:
   - port: {{ .Values.port.container.rsm.value }}
     name: {{ .Values.port.container.rsm.name }}
+  - port: {{ .Values.port.container.app.value }}
+    name: {{ .Values.port.container.app.name }}
   clusterIP: None
   selector:
     app: {{ .Values.app.name }}

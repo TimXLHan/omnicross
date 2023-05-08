@@ -8,6 +8,6 @@ spec:
     app: {{ .Values.app.name }}
   ports:
     - protocol: TCP
-      port: {{ .Values.port.container.rsm.value}}
-      targetPort: {{ .Values.port.container.rsm.value}}
+      port: {{ .Values.port.container.app.value}}
+      targetPort: {{ .Values.port.container.app.value}}
       nodePort: {{ .Values.port.node.value }}

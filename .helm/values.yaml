@@ -14,7 +14,11 @@ port: {
   container: {
     rsm: {
       name: axum,
-      value: 8080
+      value: 8080,
+    },
+    app: {
+      name: flask,
+      value: 5000,
     }
   },
   node: {
