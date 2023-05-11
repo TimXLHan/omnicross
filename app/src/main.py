@@ -46,6 +46,8 @@ def read_from_log(from_idx):
 @app.route('/dependency-graph/<from_idx>')
 def read_log(from_idx):
     log_data = read_from_log(from_idx)
+    print(log_data)
+    print(log_data["log_data"][0])
     # TODO: convert log to dependency graph and return depency graph instead of log
     # To see return data format check root/README.md or rsm/README.md
     return jsonify(log_data)
