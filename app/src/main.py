@@ -21,6 +21,11 @@ RSM_PORT = os.environ['RSM_PORT']
 if RSM_PORT is None:
     raise TypeError("RSM_PORT should not be none")
 
+REPLICAS = int(os.environ['REPLICAS'])
+if REPLICAS is None:
+    raise TypeError("REPLICAS should not be none")
+
+
 def create_apply_req(from_entrance, to_exit):
     return {
         "data": {
@@ -29,6 +34,7 @@ def create_apply_req(from_entrance, to_exit):
             "to": to_exit,
         },
     }
+
 
 def apply_to_log(from_entrance, to_exit):
     url = f"http://localhost:{RSM_PORT}/apply"
@@ -44,15 +50,24 @@ def read_from_log(from_idx):
     data = resp.json()
     return data
 
+
 @app.route('/dependency-graph/<from_idx>')
 def read_log(from_idx):
     log_data = read_from_log(from_idx)
-    print(log_data)
-    print(f"Car {PID} waits for car {find_wait_for(PID, log_data)}.")
-    # TODO: convert log to dependency graph and return depency graph instead of log
-    # To see return data format check root/README.md or rsm/README.md
-    log_data["wait_for"] = find_wait_for(PID, log_data)
-    return jsonify(log_data)
+    # find depedencies for every car
+    dependencies = [
+        {
+            "car_id": x,
+            "wait_for": find_wait_for(x, log_data)
+        }
+        for x in range(1, REPLICAS + 1)]
+
+    res = {
+        "log": log_data,
+        "dependencies": dependencies
+    }
+    return jsonify(res)
+
 
 if __name__ == "__main__":
     print("Waiting for cluster startup...")

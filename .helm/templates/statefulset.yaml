@@ -78,6 +78,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+
+        # Specify how many replicas we have
+        - name: REPLICAS
+          value: {{ .Values.statefulset.replicas | quote }}
 ---
 apiVersion: v1
 kind: Service
