@@ -94,6 +94,9 @@ def extract_data_from_log(log):
 # Find which car to wait for, return car id. If could not find current car in the log, return -1
 # If no car to wait for, return 0
 def find_wait_for(car_id, log, conflict_matrix=conflict_rule_setup()):
+    car_id = int(car_id)
+    print(car_id)
+    print(log)
     found_flg = False
     frm_to = (0, 0)
     wait_for = 0
