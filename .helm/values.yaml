@@ -6,7 +6,7 @@ app: {
 }
 statefulset: {
   name: omnicross,
-  replicas: 3
+  replicas: 4
 }
 
 

@@ -87,7 +87,7 @@ def conflict_rule_setup():
     conflict_matrix[data2index(4, 3)][data2index(2, 3)] = True
     return conflict_matrix
 
-# refer to readme for type of log
+# To see log data format check root/README.md or rsm/README.md
 def extract_data_from_log(log):
     return [item['data'] for item in log['log_data']]
 
