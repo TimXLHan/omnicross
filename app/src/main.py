@@ -3,6 +3,7 @@ import random
 from time import sleep
 import requests
 from flask import Flask, jsonify
+from wait_for_finder import find_wait_for
 
 app = Flask(__name__)
 
@@ -47,9 +48,10 @@ def read_from_log(from_idx):
 def read_log(from_idx):
     log_data = read_from_log(from_idx)
     print(log_data)
-    print(log_data["log_data"][0])
+    print(f"Car {PID} waits for car {find_wait_for(PID, log_data)}.")
     # TODO: convert log to dependency graph and return depency graph instead of log
     # To see return data format check root/README.md or rsm/README.md
+    log_data["wait_for"] = find_wait_for(PID, log_data)
     return jsonify(log_data)
 
 if __name__ == "__main__":
