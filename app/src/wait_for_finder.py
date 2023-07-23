@@ -97,7 +97,7 @@ def find_wait_for(car_id, log, conflict_matrix=conflict_rule_setup()):
     car_id = int(car_id)
     found_flg = False
     frm_to = (0, 0)
-    wait_for = 0
+    wait_for = []
     data = extract_data_from_log(log)
     for d in data:
         if d["car_id"] == car_id:
@@ -106,66 +106,67 @@ def find_wait_for(car_id, log, conflict_matrix=conflict_rule_setup()):
             break
     if not found_flg:
         return -1
+    start_look_flg = False
     for d in data:
-        if d["car_id"] != car_id and conflict_matrix[data2index(frm_to[0], frm_to[1])][data2index(d["from"], d["to"])]:
-            wait_for = d["car_id"]
+        if start_look_flg and d["car_id"] != car_id and conflict_matrix[data2index(frm_to[0], frm_to[1])][data2index(d["from"], d["to"])]:
+            wait_for.append(d["car_id"])
         elif d["car_id"] == car_id:
-            break
+            start_look_flg = True
     return wait_for
 
-# # Can be used for testing
-# if __name__ == '__main__':
-#     log = {
-#         "decided_idx": 4,
-#         "log_data": [
-#             {
-#                 "data": {
-#                     "car_id": 3,
-#                     "from": 3,
-#                     "to": 2
-#                 },
-#                 "id": [
-#                     3,
-#                     "043bc4d7-2810-4098-82b5-fc85ac0252be"
-#                 ]
-#             },
-#             {
-#                 "data": {
-#                     "car_id": 1,
-#                     "from": 1,
-#                     "to": 2
-#                 },
-#                 "id": [
-#                     1,
-#                     "c93c9d74-586c-47bb-a91c-d18168dc4420"
-#                 ]
-#             },
-#             {
-#                 "data": {
-#                     "car_id": 2,
-#                     "from": 2,
-#                     "to": 1
-#                 },
-#                 "id": [
-#                     2,
-#                     "20a249d8-675e-48e1-9374-e2682ed07f35"
-#                 ]
-#             },
-#             {
-#                 "data": {
-#                     "car_id": 4,
-#                     "from": 4,
-#                     "to": 1
-#                 },
-#                 "id": [
-#                     4,
-#                     "011e673c-ea61-4a55-9f3d-7a759be22029"
-#                 ]
-#             }
-#         ],
-#         "node_id": 4
-#     }
-#     print("Car 1 waits for car", find_wait_for(1, log))
-#     print("Car 2 waits for car", find_wait_for(2, log))
-#     print("Car 3 waits for car", find_wait_for(3, log))
-#     print("Car 4 waits for car", find_wait_for(4, log))
+# Can be used for testing
+if __name__ == '__main__':
+    log = {
+        "decided_idx": 4,
+        "log_data": [
+            {
+                "data": {
+                    "car_id": 3,
+                    "from": 3,
+                    "to": 2
+                },
+                "id": [
+                    3,
+                    "043bc4d7-2810-4098-82b5-fc85ac0252be"
+                ]
+            },
+            {
+                "data": {
+                    "car_id": 1,
+                    "from": 1,
+                    "to": 2
+                },
+                "id": [
+                    1,
+                    "c93c9d74-586c-47bb-a91c-d18168dc4420"
+                ]
+            },
+            {
+                "data": {
+                    "car_id": 2,
+                    "from": 2,
+                    "to": 1
+                },
+                "id": [
+                    2,
+                    "20a249d8-675e-48e1-9374-e2682ed07f35"
+                ]
+            },
+            {
+                "data": {
+                    "car_id": 4,
+                    "from": 4,
+                    "to": 1
+                },
+                "id": [
+                    4,
+                    "011e673c-ea61-4a55-9f3d-7a759be22029"
+                ]
+            }
+        ],
+        "node_id": 4
+    }
+    print("Car 1 waits for car", find_wait_for(1, log))
+    print("Car 2 waits for car", find_wait_for(2, log))
+    print("Car 3 waits for car", find_wait_for(3, log))
+    print("Car 4 waits for car", find_wait_for(4, log))
