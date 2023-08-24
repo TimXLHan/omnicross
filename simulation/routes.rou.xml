@@ -1,0 +1,20 @@
+<routes>
+  <vType id="car" accel="0.8" decel="4.5" sigma="0.5" length="5" minGap="2.5" maxSpeed="70"/>
+ 
+  <vehicle id="car1" type="car" depart="1" color="1,0,0" departPos="67" departSpeed="10">
+    <route edges="1to0 0to2"/>
+    <stop lane="1to0_0" endPos="-5" duration="5"/>
+  </vehicle>
+  <vehicle id="car2" type="car" depart="1" color="0,1,0" departPos="67" departSpeed="10">
+    <route edges="2to0 0to3"/>
+    <stop lane="2to0_0" endPos="-5" duration="5"/>
+  </vehicle>
+  <vehicle id="car3" type="car" depart="1" color="0,0,1" departPos="67" departSpeed="10">
+    <route edges="3to0 0to4"/>
+    <stop lane="3to0_0" endPos="-5" duration="5"/>
+  </vehicle>
+  <vehicle id="car4" type="car" depart="1" color="1,1,0" departPos="67" departSpeed="10">
+    <route edges="4to0 0to1"/>
+    <stop lane="4to0_0" endPos="-5" duration="5"/>
+  </vehicle>
+</routes>
