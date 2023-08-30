@@ -4,6 +4,7 @@ from time import sleep
 import requests
 from flask import Flask, jsonify
 from wait_for_finder import find_wait_for
+import config
 
 app = Flask(__name__)
 
@@ -50,9 +51,13 @@ def read_from_log(from_idx):
     data = resp.json()
     return data
 
+@app.route('/logs/<from_idx>')
+def read_log(from_idx):
+    log_data = read_from_log(from_idx)
+    return jsonify(log_data)
 
 @app.route('/dependency-graph/<from_idx>')
-def read_log(from_idx):
+def create_dependency_graph(from_idx):
     log_data = read_from_log(from_idx)
     # find depedencies for every car
     dependencies = [
@@ -73,6 +78,6 @@ if __name__ == "__main__":
     print("Waiting for cluster startup...")
     sleep(5)
     print("Telling cluster where I plan to go...")
-    apply_to_log(PID, random.randint(0, 3))
+    apply_to_log(PID, config.destinations[PID])
     print(f"Starting webserver on port {PORT}...")
     app.run(host="0.0.0.0", port=PORT)
