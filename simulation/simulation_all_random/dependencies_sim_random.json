@@ -1,0 +1,78 @@
+{
+    "dependencies": [
+        {
+            "car_id": 1,
+            "wait_for": [
+                3
+            ]
+        },
+        {
+            "car_id": 2,
+            "wait_for": [
+                3
+            ]
+        },
+        {
+            "car_id": 3,
+            "wait_for": []
+        },
+        {
+            "car_id": 4,
+            "wait_for": [
+                1,
+                3
+            ]
+        }
+    ],
+    "log": {
+        "decided_idx": 4,
+        "log_data": [
+            {
+                "data": {
+                    "car_id": 4,
+                    "from": 4,
+                    "to": 2
+                },
+                "id": [
+                    4,
+                    "38624f04-78ac-48fc-8cd4-3e74aa609b92"
+                ]
+            },
+            {
+                "data": {
+                    "car_id": 1,
+                    "from": 1,
+                    "to": 2
+                },
+                "id": [
+                    1,
+                    "96ef98b0-4cb5-41a2-bbcc-9680cc68dfe9"
+                ]
+            },
+            {
+                "data": {
+                    "car_id": 2,
+                    "from": 2,
+                    "to": 1
+                },
+                "id": [
+                    2,
+                    "8fd74f6b-7f92-4c9e-b477-1218ff2d30a1"
+                ]
+            },
+            {
+                "data": {
+                    "car_id": 3,
+                    "from": 3,
+                    "to": 1
+                },
+                "id": [
+                    3,
+                    "dacf16ca-6b61-4ccd-ad77-b655ccfce8eb"
+                ]
+            }
+        ],
+        "node_id": 2
+    }
+}
+
